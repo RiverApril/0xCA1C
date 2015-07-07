@@ -6,7 +6,7 @@
 
 #include <sstream>
 
-#define maxDigit 16
+#define maxDigit 10
 #define minDigit -maxDigit
 
 namespace MathInterpreter{
@@ -61,6 +61,19 @@ namespace MathInterpreter{
         Expression* e;
     };
 
+    struct SymbolFunction : Symbol{
+        SymbolFunction(QString name){
+            this->name = name;
+            this->parameters.clear();
+        }
+        void addExpression(Expression* e){
+            parameters.append(e);
+        }
+        virtual ~SymbolFunction();
+        QString name = "";
+        QList<Expression*> parameters;
+    };
+
     class Expression{
     public:
         void add(Symbol* sym){
@@ -75,10 +88,14 @@ namespace MathInterpreter{
         void addExpression(Expression* e){
             add(new SymbolExpression(e));
         }
+        void addFunction(SymbolFunction* e){
+            add(e);
+        }
         ~Expression(){
             qDeleteAll(symbols);
         }
 
+        bool isParameter = false;
         QList<Symbol*> symbols;
     };
 }

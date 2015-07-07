@@ -17,6 +17,7 @@ public:
 private:
     void on_buttonNumber_clicked(int number);
     void on_buttonSymbol_clicked(QChar symbol);
+    void on_buttonFunction_clicked(QString func);
     void updateDisplay();
 
 private slots:
@@ -44,6 +45,7 @@ private slots:
     void on_comboBoxBase_currentTextChanged(const QString &arg1);
 
     void on_buttonDecimal_clicked(){on_buttonSymbol_clicked('.');}
+    void on_buttonComma_clicked(){on_buttonSymbol_clicked(',');}
 
     void on_buttonParenthesisOpen_clicked(){on_buttonSymbol_clicked('(');}
     void on_buttonParenthesisClose_clicked(){on_buttonSymbol_clicked(')');}
@@ -64,7 +66,10 @@ private slots:
 
     void on_buttonAllClear_clicked();
 
-    void on_buttonFraction_clicked();
+    void on_buttonRoot_clicked(){on_buttonFunction_clicked("root(");}
+    void on_buttonSin_clicked(){on_buttonFunction_clicked("sin(");}
+    void on_buttonCos_clicked(){on_buttonFunction_clicked("cos(");}
+    void on_buttonTan_clicked(){on_buttonFunction_clicked("tan(");}
 
 private:
     Ui::MainWindow *ui;

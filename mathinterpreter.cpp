@@ -8,7 +8,50 @@ namespace MathInterpreter {
         delete e;
     }
 
+    SymbolFunction::~SymbolFunction(){
+         //qDeleteAll(parameters);
+    }
+
     calcNumber evaluateExpression(Expression* exp){
+
+        //Evaluate Function: func(a,b,...)
+        for(int i=0;i<exp->symbols.size();i++){
+            SymbolFunction* sf = dynamic_cast<SymbolFunction*>(exp->symbols[i]);
+            if(sf){
+                QList<SymbolNumber*> params;
+                for(Expression* p : sf->parameters){
+                    params.append(new SymbolNumber(evaluateExpression(p)));
+                }
+                if(params.size() == 0){
+                    throw SyntaxError("Unknown Function: "+sf->name+" with 0 params");
+                }else if(params.size() == 1){
+                    if(sf->name == "sqrt"){
+                        exp->symbols[i] = new SymbolNumber(qSqrt(params[0]->n));
+                    }else if(sf->name == "sin"){
+                        exp->symbols[i] = new SymbolNumber(qSin(params[0]->n));
+                    }else if(sf->name == "cos"){
+                        exp->symbols[i] = new SymbolNumber(qCos(params[0]->n));
+                    }else if(sf->name == "tan"){
+                        exp->symbols[i] = new SymbolNumber(qTan(params[0]->n));
+                    }else if(sf->name == "asin"){
+                        exp->symbols[i] = new SymbolNumber(qAsin(params[0]->n));
+                    }else if(sf->name == "acos"){
+                        exp->symbols[i] = new SymbolNumber(qAcos(params[0]->n));
+                    }else if(sf->name == "atan"){
+                        exp->symbols[i] = new SymbolNumber(qAtan(params[0]->n));
+                    }else{
+                        throw SyntaxError("Unknown Function: "+sf->name+" with 1 param");
+                    }
+                }else if(params.size() == 2){
+                    if(sf->name == "root"){
+                        exp->symbols[i] = new SymbolNumber(qPow(params[1]->n, 1.0/params[0]->n));
+                    }else{
+                        throw SyntaxError("Unknown Function: "+sf->name+" with 2 params");
+                    }
+                }
+                delete sf;
+            }
+        }
 
         //Evaluate Expression: (...)
         for(int i=0;i<exp->symbols.size();i++){
@@ -452,25 +495,30 @@ namespace MathInterpreter {
 
 
                 case '(':
-<<<<<<< HEAD
-                    if(currentFunction.size() > 0){
-                        exp->addfunction()
-=======
                     if(currentNumber.size() > 0){
                        exp->addNumber((calcNumber)QStringToNum(currentNumber, base));
                        currentNumber = "";
-                       //exp->addOperator('*');
                     }
-                    if(*i < inSize - 1){
-                        (*i)++;
-                        exp->addExpression(parseExpression(input, base, i));
->>>>>>> 485036b06320e83dbe91579531e00a188a8e8119
-                    }else{
-                        if(currentNumber.size() > 0){
-                           exp->addNumber((calcNumber)QStringToNum(currentNumber, base));
-                           currentNumber = "";
-                           exp->addOperator('*');
+                    if(currentFunction.size() > 0){
+                        if(*i < inSize - 1){
+
+                            SymbolFunction* f = new SymbolFunction(currentFunction);
+                            currentFunction = "";
+
+                            Expression* e;
+
+
+                            do{
+                                (*i)++;
+                                e = parseExpression(input, base, i);
+                                f->addExpression(e);
+                            }while(e->isParameter);
+
+                            exp->addFunction(f);
+                        }else{
+                            throw SyntaxError("Unclosed Parenthesis");
                         }
+                    }else{
                         if(*i < inSize - 1){
                             (*i)++;
                             exp->addExpression(parseExpression(input, base, i));
@@ -479,6 +527,14 @@ namespace MathInterpreter {
                         }
                     }
                     break;
+
+                case ',':
+                    if(currentNumber.size() > 0){
+                       exp->addNumber((calcNumber)QStringToNum(currentNumber, base));
+                       currentNumber = "";
+                    }
+                    exp->isParameter = true;
+                    return exp;
 
                 case ')':
                     if(currentNumber.size() > 0){
@@ -621,6 +677,9 @@ namespace MathInterpreter {
                 negative = true;
                 num = -num;
             }
+
+            long m = qPow(base, -(minDigit));
+            num = (round((num - ((long)num)) * m)/m)+(long)num;
 
             QVector<int> digitListLeft;
             QVector<int> digitListRight;

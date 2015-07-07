@@ -17,7 +17,7 @@ MainWindow::MainWindow(QWidget *parent) :
     QCoreApplication::setApplicationName("0xCA1C");
 
     QSettings settings;
-    QString stringBase = settings.value("calc/base", "10 - dec").toString();
+    QString stringBase = settings.value("calc/base", "10").toString();
 
     ui->comboBoxBase->setCurrentText(stringBase);
 
@@ -41,6 +41,11 @@ void MainWindow::on_buttonNumber_clicked(int number) {
 
 void MainWindow::on_buttonSymbol_clicked(QChar symbol) {
     inputString.insert(ui->textMainDisplay->cursorPosition(), symbol);
+    updateDisplay();
+}
+
+void MainWindow::on_buttonFunction_clicked(QString func) {
+    inputString.insert(ui->textMainDisplay->cursorPosition(), func);
     updateDisplay();
 }
 
