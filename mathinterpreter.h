@@ -17,12 +17,14 @@ namespace MathInterpreter{
     long double QStringToNum(QString string, int base);
     QString numToQString(long double number, int base);
 
+    QString convertToFraction(long double number, int base);
+
     typedef long double calcNumber;
 
     QString qStringFromLongDouble(const long double n);
 
-    QString interpret(QString input, int base);
-    QString interpret(QString input, int base, int* i);
+    QString interpretToString(QString input, int base);
+    long double interpretToNumber(QString input, int base);
 
     class Expression;
 

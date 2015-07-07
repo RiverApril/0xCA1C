@@ -11,6 +11,8 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 TARGET = 0xCA1C
 TEMPLATE = app
 
+ICON = 0xC.icns
+
 CONFIG += c++11
 
 SOURCES += main.cpp\
@@ -22,3 +24,6 @@ HEADERS  += mainwindow.h \
     exceptions.h
 
 FORMS    += mainwindow.ui
+
+DISTFILES += \
+    0xC.icns

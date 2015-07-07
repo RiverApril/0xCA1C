@@ -434,11 +434,12 @@ namespace MathInterpreter {
                     exp->addOperator(c);
                     break;
 
+
                 case '(':
                     if(currentNumber.size() > 0){
                        exp->addNumber((calcNumber)QStringToNum(currentNumber, base));
                        currentNumber = "";
-                       exp->addOperator('*');
+                       //exp->addOperator('*');
                     }
                     if(*i < inSize - 1){
                         (*i)++;
@@ -466,7 +467,7 @@ namespace MathInterpreter {
         return exp;
     }
 
-    QString interpret(QString input, int base){
+    QString interpretToString(QString input, int base){
         if(input.length() == 0){
             return "";
         }
@@ -476,8 +477,26 @@ namespace MathInterpreter {
             calcNumber evaluated = 0;
             evaluated = evaluateExpression(parsed);
             delete parsed;
-            QString s = numToQString(evaluated, base);
-            return s;
+            return numToQString(evaluated, base);
+        }catch(SyntaxError e){
+            if(parsed){
+                delete parsed;
+            }
+            throw FailedInterpret("Syntax Error: "+e.message);
+        }
+    }
+
+    long double interpretToNumber(QString input, int base){
+        if(input.length() == 0){
+            return 0;
+        }
+        Expression* parsed = NULL;
+        try{
+            parsed = parseExpression(input, base);
+            calcNumber evaluated = 0;
+            evaluated = evaluateExpression(parsed);
+            delete parsed;
+            return evaluated;
         }catch(SyntaxError e){
             if(parsed){
                 delete parsed;
