@@ -46,7 +46,7 @@ void MainWindow::on_buttonSymbol_clicked(QChar symbol) {
 
 void MainWindow::on_buttonCalculate_clicked() {
     try{
-        inputString = MathInterpreter::interpret(ui->textMainDisplay->text(), base);
+        inputString = MathInterpreter::interpretToString(ui->textMainDisplay->text(), base);
         ui->labelError->setText("");
     }catch(FailedInterpret e){
         inputString = "";
@@ -58,7 +58,7 @@ void MainWindow::on_buttonCalculate_clicked() {
 
 void MainWindow::on_comboBoxBase_currentTextChanged(const QString &text) {
 
-    on_buttonCalculate_clicked();
+    //on_buttonCalculate_clicked();
 
     QString s = text.left(2);
     bool* okay = new bool(false);
@@ -106,3 +106,16 @@ void MainWindow::on_buttonAllClear_clicked() {
     inputString = "";
     updateDisplay();
 }
+
+/*void MainWindow::on_buttonFraction_clicked() {
+    try{
+        long double a = MathInterpreter::interpretToNumber(ui->textMainDisplay->text(), base);
+        inputString = '('+MathInterpreter::convertToFraction(a, base)+')';
+        ui->labelError->setText("");
+    }catch(FailedInterpret e){
+        inputString = "";
+        ui->labelError->setText(e.message);
+    }
+
+    updateDisplay();
+}*/

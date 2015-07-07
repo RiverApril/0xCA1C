@@ -64,6 +64,8 @@ private slots:
 
     void on_buttonAllClear_clicked();
 
+    void on_buttonFraction_clicked();
+
 private:
     Ui::MainWindow *ui;
 };
