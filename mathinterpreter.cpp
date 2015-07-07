@@ -48,7 +48,7 @@ namespace MathInterpreter {
             }
         }
 
-        //Evaluate Or, And, and Xor: a|b a&b a@b
+        //Evaluate Or, And, and Xor: a|b a&b a⊻b
         for(int i=0;i<exp->symbols.size();i++){
             SymbolOperator* so = dynamic_cast<SymbolOperator*>(exp->symbols[i]);
             if(so){
@@ -186,7 +186,7 @@ namespace MathInterpreter {
             }
         }
 
-        //Evaluate Multiplication, Divition, and Modulo: a*b a/b a%b
+        //Evaluate Multiplication, Division, and Modulo: a*b a/b a%b
         for(int i=0;i<exp->symbols.size();i++){
             SymbolOperator* so = dynamic_cast<SymbolOperator*>(exp->symbols[i]);
             if(so){
@@ -347,6 +347,7 @@ namespace MathInterpreter {
         Expression* exp = new Expression();
         int inSize = input.size();
         QString currentNumber = "";
+        QString currentFunction = "";
         for(;*i<inSize;(*i)++) {
             ushort c = input.at(*i).unicode();
             switch(c){
@@ -386,6 +387,36 @@ namespace MathInterpreter {
                 case 'X':
                 case 'Y':
                 case 'Z':
+                case '.':
+                    if(currentFunction.size() == 0){
+                        currentNumber += c;
+                    }else{
+                        throw SyntaxError(QString("unexpected number after function name: ")+currentFunction);
+                    }
+                    break;
+
+                case '+':
+                case '-':
+                case '*':
+                case '/':
+                case '%':
+                case '^':
+                case '&':
+                case '|':
+                case 0x22BB:
+                case 0x00AB://«
+                case 0x00BB://»
+                    if(currentFunction.size() == 0){
+                        if(currentNumber.size() > 0){
+                            exp->addNumber((calcNumber)QStringToNum(currentNumber, base));
+                            currentNumber = "";
+                        }
+                        exp->addOperator(c);
+                    }else{
+                        throw SyntaxError(QString("unexpected number after function name: ")+currentFunction);
+                    }
+                    break;
+
                 case 'a':
                 case 'b':
                 case 'c':
@@ -412,39 +443,28 @@ namespace MathInterpreter {
                 case 'x':
                 case 'y':
                 case 'z':
-                case '.':
-                    currentNumber += c;
-                    break;
-
-                case '+':
-                case '-':
-                case '*':
-                case '/':
-                case '%':
-                case '^':
-                case '&':
-                case '|':
-                case 0x22BB:
-                case 0x00AB://«
-                case 0x00BB://»
-                    if(currentNumber.size() > 0){
+                    if(currentFunction.size() == 0 && currentNumber.size() > 0){
                         exp->addNumber((calcNumber)QStringToNum(currentNumber, base));
                         currentNumber = "";
                     }
-                    exp->addOperator(c);
+                    currentFunction += c;
                     break;
 
                 case '(':
-                    if(currentNumber.size() > 0){
-                       exp->addNumber((calcNumber)QStringToNum(currentNumber, base));
-                       currentNumber = "";
-                       exp->addOperator('*');
-                    }
-                    if(*i < inSize - 1){
-                        (*i)++;
-                        exp->addExpression(parseExpression(input, base, i));
+                    if(currentFunction.size() > 0){
+                        exp->addfunction()
                     }else{
-                        throw SyntaxError("Unclosed Parenthesis");
+                        if(currentNumber.size() > 0){
+                           exp->addNumber((calcNumber)QStringToNum(currentNumber, base));
+                           currentNumber = "";
+                           exp->addOperator('*');
+                        }
+                        if(*i < inSize - 1){
+                            (*i)++;
+                            exp->addExpression(parseExpression(input, base, i));
+                        }else{
+                            throw SyntaxError("Unclosed Parenthesis");
+                        }
                     }
                     break;
 
