@@ -555,22 +555,7 @@ namespace MathInterpreter {
     }
 
     QString interpretToString(QString input, int base){
-        if(input.length() == 0){
-            return "";
-        }
-        Expression* parsed = NULL;
-        try{
-            parsed = parseExpression(input, base);
-            calcNumber evaluated = 0;
-            evaluated = evaluateExpression(parsed);
-            delete parsed;
-            return numToQString(evaluated, base);
-        }catch(SyntaxError e){
-            if(parsed){
-                delete parsed;
-            }
-            throw FailedInterpret("Syntax Error: "+e.message);
-        }
+        return numToQString(interpretToNumber(input, base), base);
     }
 
     long double interpretToNumber(QString input, int base){
@@ -597,8 +582,6 @@ namespace MathInterpreter {
             return symbol - 48;
         } else if (symbol >= 65 && symbol <= 90) { // A - Z
             return symbol - 65 + 10;
-        } else if (symbol >= 97 && symbol <= 122) { // a - z
-            return symbol - 97 + 10;
         } else {
             throw SyntaxError(QString("Unknown symbol as number: ")+symbol);
         }
