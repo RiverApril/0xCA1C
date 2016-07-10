@@ -6,9 +6,6 @@
 
 #include <sstream>
 
-#define maxDigit 10
-#define minDigit -maxDigit
-
 namespace MathInterpreter{
 
     int getNumberFromSymbol(char c);

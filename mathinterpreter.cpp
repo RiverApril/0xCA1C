@@ -1,4 +1,5 @@
 #include "mathinterpreter.h"
+#include <math.h>
 #include <QtMath>
 #include <QVector>
 
@@ -26,25 +27,31 @@ namespace MathInterpreter {
                     throw SyntaxError("Unknown Function: "+sf->name+" with 0 params");
                 }else if(params.size() == 1){
                     if(sf->name == "sqrt"){
-                        exp->symbols[i] = new SymbolNumber(qSqrt(params[0]->n));
+                        exp->symbols[i] = new SymbolNumber(sqrtl(params[0]->n));
                     }else if(sf->name == "sin"){
-                        exp->symbols[i] = new SymbolNumber(qSin(params[0]->n));
+                        exp->symbols[i] = new SymbolNumber(sinl(params[0]->n));
                     }else if(sf->name == "cos"){
-                        exp->symbols[i] = new SymbolNumber(qCos(params[0]->n));
+                        exp->symbols[i] = new SymbolNumber(cosl(params[0]->n));
                     }else if(sf->name == "tan"){
-                        exp->symbols[i] = new SymbolNumber(qTan(params[0]->n));
+                        exp->symbols[i] = new SymbolNumber(tanl(params[0]->n));
                     }else if(sf->name == "asin"){
-                        exp->symbols[i] = new SymbolNumber(qAsin(params[0]->n));
+                        exp->symbols[i] = new SymbolNumber(asinl(params[0]->n));
                     }else if(sf->name == "acos"){
-                        exp->symbols[i] = new SymbolNumber(qAcos(params[0]->n));
+                        exp->symbols[i] = new SymbolNumber(acosl(params[0]->n));
                     }else if(sf->name == "atan"){
-                        exp->symbols[i] = new SymbolNumber(qAtan(params[0]->n));
+                        exp->symbols[i] = new SymbolNumber(atanl(params[0]->n));
+                    }else if(sf->name == "ln"){
+                        exp->symbols[i] = new SymbolNumber(logl(params[0]->n));
+                    }else if(sf->name == "log"){
+                        exp->symbols[i] = new SymbolNumber(logl(params[0]->n) / logl(10));
                     }else{
                         throw SyntaxError("Unknown Function: "+sf->name+" with 1 param");
                     }
                 }else if(params.size() == 2){
                     if(sf->name == "root"){
-                        exp->symbols[i] = new SymbolNumber(qPow(params[1]->n, 1.0/params[0]->n));
+                        exp->symbols[i] = new SymbolNumber(powl(params[1]->n, 1.0/params[0]->n));
+                    }else if(sf->name == "log"){
+                        exp->symbols[i] = new SymbolNumber(logl(params[1]->n) / logl(params[0]->n));
                     }else{
                         throw SyntaxError("Unknown Function: "+sf->name+" with 2 params");
                     }
@@ -87,11 +94,42 @@ namespace MathInterpreter {
                             }
                         }
                     }
+                }else if(so->o == '~'){
+                    //Evaluate Not:  ~a
+                    if(i < exp->symbols.size()-1){
+                        bool ok = true;
+                        if(i > 0){
+                            SymbolOperator* aso = dynamic_cast<SymbolOperator*>(exp->symbols[i-1]);
+                            ok = aso;
+                        }
+                        if(ok){
+                            SymbolNumber* b = dynamic_cast<SymbolNumber*>(exp->symbols[i+1]);
+                            if(b){
+                                if((long long)(b->n) == b->n){
+                                    if(b->n >= 0){
+                                        long long npt = qNextPowerOfTwo((long long)b->n)-1;
+                                        exp->symbols[i] = new SymbolNumber((~((long long)b->n)) & npt);
+                                    }else{
+                                        long long npt = qNextPowerOfTwo((long long)-b->n)-1;
+                                        exp->symbols[i] = new SymbolNumber(-((~((long long)b->n)) & npt));
+                                    }
+                                    delete so;
+                                    exp->symbols.removeAt(i+1);
+                                    i = 0;
+                                    continue;
+                                }else{
+                                    throw SyntaxError("Cannot perform bitwise operation on non whole number");
+                                }
+                            }else{
+                                throw SyntaxError("3 Operators in a row or 2 at begining");
+                            }
+                        }
+                    }
                 }
             }
         }
 
-        //Evaluate Or, And, and Xor: a|b a&b a⊻b
+        //Evaluate Or, And, and Xor: a|b a&b a⊕b
         for(int i=0;i<exp->symbols.size();i++){
             SymbolOperator* so = dynamic_cast<SymbolOperator*>(exp->symbols[i]);
             if(so){
@@ -137,7 +175,7 @@ namespace MathInterpreter {
                     }else{
                         throw SyntaxError("One side of & is empty");
                     }
-                }else if(so->o == 0x22BB){
+                }else if(so->o == 0x2295){
                     if(i > 0 && i < exp->symbols.size()-1){
                         SymbolNumber* a = dynamic_cast<SymbolNumber*>(exp->symbols[i-1]);
                         SymbolNumber* b = dynamic_cast<SymbolNumber*>(exp->symbols[i+1]);
@@ -153,10 +191,10 @@ namespace MathInterpreter {
                                 throw SyntaxError("Cannot perform bitwise operation on non whole number");
                             }
                         }else{
-                            throw SyntaxError("One or both sides of ⊻ are Operators");
+                            throw SyntaxError("One or both sides of ⊕ are Operators");
                         }
                     }else{
-                        throw SyntaxError("One side of ⊻ is empty");
+                        throw SyntaxError("One side of ⊕ is empty");
                     }
                 }else if(so->o == 0x00AB){
                     if(i > 0 && i < exp->symbols.size()-1){
@@ -184,8 +222,8 @@ namespace MathInterpreter {
                         SymbolNumber* a = dynamic_cast<SymbolNumber*>(exp->symbols[i-1]);
                         SymbolNumber* b = dynamic_cast<SymbolNumber*>(exp->symbols[i+1]);
                         if(a && b){
-                            if((long long)(a->n) == a->n && (long long)(b->n) == b->n){
-                                exp->symbols[i] = new SymbolNumber((long long)a->n >> (long long)b->n);
+                            if((unsigned long long)(a->n) == a->n && (long long)(b->n) == b->n){
+                                exp->symbols[i] = new SymbolNumber((unsigned long long)a->n >> (long long)b->n);
                                 delete so;
                                 exp->symbols.removeAt(i+1);
                                 exp->symbols.removeAt(i-1);
@@ -213,7 +251,7 @@ namespace MathInterpreter {
                         SymbolNumber* a = dynamic_cast<SymbolNumber*>(exp->symbols[i-1]);
                         SymbolNumber* b = dynamic_cast<SymbolNumber*>(exp->symbols[i+1]);
                         if(a && b){
-                            exp->symbols[i] = new SymbolNumber(qPow(a->n, b->n));
+                            exp->symbols[i] = new SymbolNumber(powl(a->n, b->n));
                             delete so;
                             exp->symbols.removeAt(i+1);
                             exp->symbols.removeAt(i-1);
@@ -444,9 +482,10 @@ namespace MathInterpreter {
                 case '/':
                 case '%':
                 case '^':
+                case '~':
                 case '&':
                 case '|':
-                case 0x22BB:
+                case 0x2295://⊕
                 case 0x00AB://«
                 case 0x00BB://»
                     if(currentFunction.size() == 0){
@@ -597,7 +636,7 @@ namespace MathInterpreter {
     }
 
     long double QStringToNum(QString s, int base){
-        if (base < 1 || base > 36) {
+        if (base < 2 || base > 36) {
             throw SyntaxError(QString("Base is out of range: ")+base);
         } else {
             bool addToLeft = true;
@@ -632,14 +671,14 @@ namespace MathInterpreter {
             long double final = 0;
             int d = 0;
             for (int i = (int) left.size() - 1; i >= 0; i--) {
-                final += qPow(base, d) * left[i];
+                final += powl(base, d) * left[i];
                 d++;
             }
 
             d = -1;
 
             for (int i = 0; i < right.size(); i++) {
-                final += qPow(base, d) * right[i];
+                final += powl(base, d) * right[i];
                 d--;
             }
 
@@ -652,7 +691,7 @@ namespace MathInterpreter {
     }
 
     QString numToQString(long double num, int base){
-        if(base < 1 || base > 62){
+        if(base < 2 || base > 36){
             throw SyntaxError(QString("Base is out of range: ")+base);
         }else{
             bool negative = false;
@@ -661,14 +700,17 @@ namespace MathInterpreter {
                 num = -num;
             }
 
-            long m = qPow(base, -(minDigit));
-            num = (round((num - ((long)num)) * m)/m)+(long)num;
+            //long m = qPow(base, -(minDigit));
+            //num = (round((num - ((long)num)) * m)/m)+(long)num;
+
+            int maxDigit = logl(powl(10, 10)) / logl(base);
+            int minDigit = -maxDigit;
 
             QVector<int> digitListLeft;
             QVector<int> digitListRight;
             int digitPos = 0;
             for(int i=maxDigit;i>=0;i--){
-                long double digit = qPow(base, i);
+                long double digit = powl(base, i);
                 digitListLeft.push_back(0);
                 while(num >= digit){
                     num -= digit;
@@ -678,7 +720,7 @@ namespace MathInterpreter {
             }
             digitPos = 0;
             for(int i=-1;i>=minDigit;i--){
-                long double digit = qPow(base, i);
+                long double digit = powl(base, i);
                 digitListRight.push_back(0);
                 while(num >= digit){
                     num -= digit;

@@ -58,18 +58,13 @@ private slots:
 
     void on_buttonOr_clicked(){on_buttonSymbol_clicked('|');}
     void on_buttonAnd_clicked(){on_buttonSymbol_clicked('&');}
-    void on_buttonXor_clicked(){on_buttonSymbol_clicked(0x22BB);}
+    void on_buttonXor_clicked(){on_buttonSymbol_clicked(0x2295);}
     void on_buttonShiftLeft_clicked(){on_buttonSymbol_clicked(0x00AB);}
     void on_buttonShiftRight_clicked(){on_buttonSymbol_clicked(0x00BB);}
 
     void on_textMainDisplay_textEdited(const QString &arg1);
 
     void on_buttonAllClear_clicked();
-
-    void on_buttonRoot_clicked(){on_buttonFunction_clicked("root(");}
-    void on_buttonSin_clicked(){on_buttonFunction_clicked("sin(");}
-    void on_buttonCos_clicked(){on_buttonFunction_clicked("cos(");}
-    void on_buttonTan_clicked(){on_buttonFunction_clicked("tan(");}
 
 private:
     Ui::MainWindow *ui;

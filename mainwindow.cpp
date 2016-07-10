@@ -54,7 +54,8 @@ void MainWindow::on_buttonCalculate_clicked() {
         inputString = MathInterpreter::interpretToString(ui->textMainDisplay->text(), base);
         ui->labelError->setText("");
     }catch(FailedInterpret e){
-        inputString = "";
+        ui->labelError->setText(e.message);
+    }catch(SyntaxError e){
         ui->labelError->setText(e.message);
     }
 
@@ -66,10 +67,19 @@ void MainWindow::on_comboBoxBase_currentTextChanged(const QString &text) {
     //on_buttonCalculate_clicked();
 
     QString s = text.left(2);
-    bool* okay = new bool(false);
-    int newBase = s.toInt(okay);
-    if(*okay){
-        inputString = MathInterpreter::numToQString(MathInterpreter::QStringToNum(inputString, base), newBase);
+    bool okay = false;
+    int newBase = s.toInt(&okay);
+    if(newBase < 2 || newBase > 36){
+        okay = false;
+    }
+    if(okay){
+        try{
+            inputString = MathInterpreter::numToQString(MathInterpreter::QStringToNum(inputString, base), newBase);
+        }catch(FailedInterpret e){
+            ui->labelError->setText(e.message);
+        }catch(SyntaxError e){
+            ui->labelError->setText(e.message);
+        }
         base = newBase;
 
         QSettings settings;
@@ -80,8 +90,6 @@ void MainWindow::on_comboBoxBase_currentTextChanged(const QString &text) {
         ui->comboBoxBase->setCurrentText(QString(base));
     }
     updateDisplay();
-
-    delete okay;
 
     ui->buttonNumberF->setEnabled(base > 0xF);
     ui->buttonNumberE->setEnabled(base > 0xE);
